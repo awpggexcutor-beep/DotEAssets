@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #121212;
+            --secondary-bg: #121212;
+            --card-bg: ##151515;
+            --text-light: #f0f0f0;
+            --text-medium: #b0b0b0;
+            --text-dark: #333;
+            --border: #3A3635;
+            --highlight: rgb(63, 63, 241); /* Light pink accent */
+            --highlight-dark: rgba(63,63,241);
+            --pink-glow: 0 0 20px rgba(0, 0, 0, 0.5);
+            --shadow: 0 8px 20px rgba(18,18,18);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --success: #4CAF50;
+            --danger: rgba(63,63,241);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--secondary-bg);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--highlight);
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--highlight-dark);
+        }
+
+        body {
+            background: var(--primary-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            line-height: 1.6;
+            scrollbar-width: thin;
+            scrollbar-color: var(--highlight) var(--secondary-bg);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--secondary-bg);
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border);
+            box-shadow: var(--pink-glow);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--highlight);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-medium);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--highlight);
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(70vh - 100px);
+        }
+
+        .modal-script {
+            background: var(--primary-bg);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 13px;
+            color: var(--text-light);
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--card-bg);
+        }
+
+        /* Button styles */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--highlight);
+            color: var(--primary-bg);
+        }
+
+        .btn-primary:hover {
+            background: var(--highlight-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 182, 193, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #3e8e41;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #7B68EE;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-bg);
+            color: var(--text-light);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--card-bg);
+            transform: translateY(-2px);
+        }
+
+        /* Smooth scroll container */
+        .scroll-container {
+            height: calc(100vh - 180px);
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-top: 15px;
+        }
+
+        /* Header with glow effect */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--highlight);
+        }
+
+        .logo i {
+            font-size: 24px;
+        }
+
+        /* Search box with pink interaction */
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            position: relative;
+        }
+
+        .search-input {
+            padding: 12px 20px;
+            border: 1px solid var(--border);
+            background: var(--secondary-bg);
+            color: var(--text-light);
+            border-radius: var(--radius-md);
+            width: 300px;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-input:focus {
+            border-color: var(--highlight);
+            box-shadow: var(--pink-glow);
+            transform: scale(1.02);
+        }
+
+        .search-button {
+            padding: 12px 20px;
+            background: var(--highlight);
+            color: var(--primary-bg);
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(255, 182, 193, 0.3);
+        }
+
+        .search-button:hover {
+            background: var(--highlight-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 182, 193, 0.4);
+        }
+
+        .search-button:active {
+            transform: translateY(0);
+        }
+
+        /* Filters with modern design */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease 0.2s both;
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border: 1px solid var(--border);
+            background: var(--secondary-bg);
+            color: var(--text-light);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            outline: none;
+            transition: var(--transition);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b0b0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            padding-right: 30px;
+        }
+
+        .filter-select:focus {
+            border-color: var(--highlight);
+            box-shadow: 0 0 0 2px rgba(255, 182, 193, 0.2);
+        }
+
+        /* Script cards with hover animation */
+        .scripts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .script-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            transform: translateY(0);
+            opacity: 0;
+            animation: cardEnter 0.5s ease forwards;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .script-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--highlight);
+            color: var(--primary-bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes cardEnter {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .script-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--highlight);
+            box-shadow: var(--pink-glow);
+        }
+
+        .script-image-container {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .script-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: var(--secondary-bg);
+            transition: transform 0.5s ease;
+        }
+
+        .script-card:hover .script-image {
+            transform: scale(1.05);
+        }
+
+        .script-content {
+            padding: 16px;
+        }
+
+        .script-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-light);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.3s ease;
+        }
+
+        .script-card:hover .script-title {
+            color: var(--highlight);
+        }
+
+        .script-info {
+            color: var(--text-medium);
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .script-info i {
+            color: var(--highlight);
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .script-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--text-medium);
+        }
+
+        .stat-item i {
+            color: var(--highlight);
+        }
+
+        /* Loader with pink accent */
+        .loader {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--highlight);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+
+        /* Pink notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--highlight);
+            color: var(--primary-bg);
+            padding: 12px 22px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+            animation: slideInRight 0.5s ease, fadeOut 0.5s ease 2.5s forwards;
+            box-shadow: var(--pink-glow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notification i {
+            font-size: 16px;
+        }
+
+        /* Modern pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .page-button {
+            padding: 8px 16px;
+            background: var(--secondary-bg);
+            color: var(--highlight);
+            border: 1px solid var(--highlight);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-button:hover {
+            background: var(--highlight);
+            color: var(--primary-bg);
+            border-color: var(--highlight);
+        }
+
+        .page-button.active {
+            background: var(--highlight);
+            color: var(--primary-bg);
+            border-color: transparent;
+        }
+
+        .page-button.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Page transition animation */
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--highlight);
+            z-index: 9999;
+            transform: scaleY(0);
+            transform-origin: bottom;
+            pointer-events: none;
+        }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-medium);
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: var(--highlight);
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Local scripts section */
+        .local-scripts-toggle {
+            background: var(--highlight);
+            color: var(--primary-bg);
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 8px 15px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .local-scripts-toggle:hover {
+            background: var(--highlight-dark);
+            transform: translateY(-2px);
+        }
+
+        .local-scripts-container {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .local-scripts-container.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--highlight);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remove-script-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 2;
+        }
+
+        .script-card:hover .remove-script-btn {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes pageTransitionOut {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+
+        @keyframes pageTransitionIn {
+            from { transform: scaleY(1); }
+            to { transform: scaleY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .scripts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                justify-content: center;
+            }
+
+            .local-scripts-toggle {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            
+            .filter-select {
+                flex-grow: 1;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page transition overlay -->
+    <div class="page-transition" id="pageTransition"></div>
+
+    <!-- Script Modal -->
+    <div class="modal" id="scriptModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Script Details</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-script" id="modalScriptContent">Loading script...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="saveScriptBtn">
+                    <i class="fas fa-bookmark"></i>
+                    Save Script
+                </button>
+                <button class="btn btn-primary" id="modalCopyButton">
+                    <i class="fas fa-copy"></i>
+                    Copy Script
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-code"></i>
+            <span>Prism Hub</span>
+        </div>
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="Search scripts..." id="searchInput">
+            <button class="search-button" onclick="searchScripts()">
+                <i class="fas fa-search"></i>
+                Search
+            </button>
+            <button class="local-scripts-toggle" id="localScriptsToggle">
+                <i class="fas fa-bookmark"></i>
+                My Scripts
+            </button>
+        </div>
+    </div>
+
+    <div class="filters">
+        <select class="filter-select" id="scriptType">
+            <option value="">All Types</option>
+            <option value="free">Free</option>
+            <option value="paid">Paid</option>
+        </select>
+        
+        <select class="filter-select" id="sortBy">
+            <option value="updatedAt">Recently Updated</option>
+            <option value="views">Most Views</option>
+            <option value="likeCount">Most Likes</option>
+            <option value="createdAt">Newest</option>
+        </select>
+        
+        <select class="filter-select" id="maxResults">
+            <option value="10">10 Results</option>
+            <option value="20" selected>20 Results</option>
+            <option value="30">30 Results</option>
+            <option value="50">50 Results</option>
+        </select>
+    </div>
+
+    <div class="scroll-container">
+        <div class="scripts-grid" id="scriptsContainer">
+            <div class="loader"></div>
+        </div>
+
+        <div class="local-scripts-container" id="localScriptsContainer">
+            <h3 class="section-title">
+                <i class="fas fa-bookmark"></i>
+                My Saved Scripts
+            </h3>
+            <div class="scripts-grid" id="localScriptsGrid">
+                <!-- Local scripts will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span>Script copied!</span>
+    </div>
+
+    <script>
+        let scriptsData = [];
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentScriptIndex = -1;
+        let currentScript = null;
+        const proxies = [
+            'https://api.codetabs.com/v1/proxy/?quest=',
+            'https://thingproxy.freeboard.io/fetch/',
+            'https://corsproxy.io/?'
+        ];
+        let currentProxy = 0;
+        let showLocalScripts = false;
+
+        // Local storage functions
+        function getLocalScripts() {
+            const scripts = localStorage.getItem('savedScripts');
+            return scripts ? JSON.parse(scripts) : [];
+        }
+
+        function saveLocalScript(script) {
+            const scripts = getLocalScripts();
+            // Check if script already exists
+            if (!scripts.some(s => s.title === script.title && s.script === script.script)) {
+                scripts.push(script);
+                localStorage.setItem('savedScripts', JSON.stringify(scripts));
+                return true;
+            }
+            return false;
+        }
+
+        function removeLocalScript(index) {
+            const scripts = getLocalScripts();
+            scripts.splice(index, 1);
+            localStorage.setItem('savedScripts', JSON.stringify(scripts));
+            renderLocalScripts();
+            return scripts;
+        }
+
+        function renderLocalScripts() {
+            const container = document.getElementById('localScriptsGrid');
+            const scripts = getLocalScripts();
+            
+            if (scripts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book-open"></i>
+                        <h3>No saved scripts</h3>
+                        <p>Save scripts by clicking the bookmark icon in the script modal</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            scripts.forEach((script, index) => {
+                html += `
+                    <div class="script-card" style="animation-delay: ${index * 0.05}s">
+                        <button class="remove-script-btn" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="script-image-container">
+                            <img
+                                src="${script.image || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMzAwIDE4MCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxODAiIGZpbGw9IiMzMzMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkludGVyIiBmb250LXNpemU9IjE0IiBmaWxsPSIjYjBiMGIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='}"
+                                class="script-image"
+                                onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMzAwIDE4MCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxODAiIGZpbGw9IiMzMzMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkludGVyIiBmb250LXNpemU9IjE0IiBmaWxsPSIjYjBiMGIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4='"
+                            >
+                        </div>
+                        <div class="script-content">
+                            <h3 class="script-title" title="${script.title}">${script.title}</h3>
+                            <p class="script-info">
+                                <i class="fas fa-gamepad"></i>
+                                ${script.game || 'No game specified'}
+                            </p>
+                            <div class="script-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>${script.date ? new Date(script.date).toLocaleDateString() : 'N/A'}</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" data-index="${index}" data-local="true" style="width: 100%;">
+                                <i class="fas fa-copy"></i>
+                                Copy Script
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // Add click event to copy buttons
+            document.querySelectorAll('#localScriptsGrid .btn-primary').forEach(btn => {
+                btn.addEventListener('click', handleLocalCopy);
+            });
+            
+            // Add click event to remove buttons
+            document.querySelectorAll('.remove-script-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = btn.dataset.index;
+                    removeLocalScript(index);
+                    showMessage('Script removed from your collection');
+                });
+            });
+            
+            // Add click event to cards to open modal
+            document.querySelectorAll('#localScriptsGrid .script-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Don't open modal if clicking on a button
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                    
+                    const index = Array.from(card.parentElement.children).indexOf(card);
+                    const scripts = getLocalScripts();
+                    openScriptModal(index, true);
+                });
+            });
+        }
+
+        function toggleLocalScripts() {
+            showLocalScripts = !showLocalScripts;
+            const container = document.getElementById('localScriptsContainer');
+            const toggleBtn = document.getElementById('localScriptsToggle');
+            
+            if (showLocalScripts) {
+                container.classList.add('active');
+                toggleBtn.innerHTML = '<i class="fas fa-globe"></i> Browse Scripts';
+                renderLocalScripts();
+            } else {
+                container.classList.remove('active');
+                toggleBtn.innerHTML = '<i class="fas fa-bookmark"></i> My Scripts';
+            }
+        }
+
+        // Page transition function
+        async function animatePageTransition() {
+            const transition = document.getElementById('pageTransition');
+            transition.style.animation = 'pageTransitionOut 0.4s ease forwards';
+            
+            await new Promise(resolve => setTimeout(resolve, 400));
+            
+            transition.style.animation = 'pageTransitionIn 0.4s ease forwards';
+            await new Promise(resolve => setTimeout(resolve, 400));
+        }
+
+        async function fetchWithRetry(url, retries = 3) {
+            try {
+                const proxyUrl = proxies[currentProxy] + encodeURIComponent(url);
+                const response = await fetch(proxyUrl, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                if (retries > 0) {
+                    currentProxy = (currentProxy + 1) % proxies.length;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return fetchWithRetry(url, retries - 1);
+                }
+                throw error;
+            }
+        }
+
+        async function loadScripts(search = '', page = 1) {
+            await animatePageTransition();
+            
+            const container = document.getElementById('scriptsContainer');
+            container.innerHTML = '<div class="loader"></div>';
+            
+            try {
+                const scriptType = document.getElementById('scriptType').value;
+                const sortBy = document.getElementById('sortBy').value;
+                const maxResults = document.getElementById('maxResults').value;
+                
+                // Use a direct API endpoint that doesn't require CORS
+                let apiUrl;
+                if (search) {
+                    apiUrl = `https://scriptblox.com/api/script/search?q=${encodeURIComponent(search)}&page=${page}&max=${maxResults}`;
+                } else {
+                    apiUrl = `https://scriptblox.com/api/script/fetch?page=${page}&max=${maxResults}`;
+                }
+                
+                if (scriptType) apiUrl += `&mode=${scriptType}`;
+                if (sortBy) apiUrl += `&sortBy=${sortBy}`;
+                
+                // Try direct fetch first
+                let data;
+                try {
+                    const response = await fetch(apiUrl);
+                    data = await response.json();
+                } catch (directError) {
+                    // If direct fetch fails, use proxy
+                    console.log('Direct fetch failed, using proxy...');
+                    data = await fetchWithRetry(apiUrl);
+                }
+                
+                // Handle response data
+                if (data && data.result && data.result.scripts) {
+                    scriptsData = data.result.scripts;
+                    totalPages = data.result.totalPages || 1;
+                } else if (data && Array.isArray(data)) {
+                    scriptsData = data;
+                    totalPages = 1;
+                } else {
+                    scriptsData = [];
+                    totalPages = 1;
+                }
+                
+                currentPage = page;
+                
+                renderScripts();
+                renderPagination();
+            } catch (error) {
+                console.error('Error fetching scripts:', error);
+                showMessage(`Error: ${error.message}`);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Failed to load scripts</h3>
+                        <p>We couldn't connect to the server. Please check your internet connection and try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderScripts() {
+            const container = document.getElementById('scriptsContainer');
+            
+            if (scriptsData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>No scripts found</h3>
+                        <p>Try adjusting your search or filters to find what you're looking for.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            scriptsData.forEach((script, index) => {
+                const raw = script.image;
+                const imageUrl = raw
+                    ? (raw.startsWith('http') ? raw : `https://scriptblox.com${raw}`)
+                    : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMzAwIDE4MCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxODAiIGZpbGw9IiMyNTI1MjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkludGVyIiBmb250LXNpemU9IjE0IiBmaWxsPSIjYjBiMGIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
+    
+                html += `
+                    <div class="script-card" style="animation-delay: ${index * 0.05}s" data-index="${index}">
+                        ${script.paid ? '<span class="script-badge">Premium</span>' : ''}
+                        <div class="script-image-container">
+                            <img
+                                src="${imageUrl}"
+                                class="script-image"
+                                onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMzAwIDE4MCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIxODAiIGZpbGw9IiMyNTI1MjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkludGVyIiBmb250LXNpemU9IjE0IiBmaWxsPSIjYjBiMGIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGlinZT0ibWlkZGxlIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4='"
+                            >
+                        </div>
+                        <div class="script-content">
+                            <h3 class="script-title" title="${script.title}">${script.title}</h3>
+                            <p class="script-info">
+                                <i class="fas fa-gamepad"></i>
+                                ${script.game?.name || 'No game specified'}
+                            </p>
+                            <div class="script-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-eye"></i>
+                                    <span>${script.views?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span>${script.likeCount?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>${script.updatedAt ? new Date(script.updatedAt).toLocaleDateString() : 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // Add click event to cards to open modal
+            document.querySelectorAll('.script-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Don't open modal if clicking on a child element that has its own click handler
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                    
+                    const index = card.dataset.index;
+                    openScriptModal(index);
+                });
+            });
+        }
+
+        function openScriptModal(index, isLocal = false) {
+            let script;
+            if (isLocal) {
+                const scripts = getLocalScripts();
+                script = scripts[index];
+                currentScript = {...script, isLocal: true, localIndex: index};
+            } else {
+                script = scriptsData[index];
+                currentScript = {...script, isLocal: false, index: index};
+            }
+            
+            if (!script) return;
+            
+            const modal = document.getElementById('scriptModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalScriptContent');
+            const modalCopyBtn = document.getElementById('modalCopyButton');
+            const saveScriptBtn = document.getElementById('saveScriptBtn');
+            
+            modalTitle.textContent = script.title;
+            modalContent.textContent = script.script || 'No script content available';
+            
+            // Update save button based on whether script is already saved
+            const scripts = getLocalScripts();
+            const isSaved = scripts.some(s => s.title === script.title && s.script === script.script);
+            
+            if (isSaved) {
+                saveScriptBtn.innerHTML = '<i class="fas fa-check"></i> Saved';
+                saveScriptBtn.classList.add('btn-success');
+                saveScriptBtn.classList.remove('btn-secondary');
+            } else {
+                saveScriptBtn.innerHTML = '<i class="fas fa-bookmark"></i> Save Script';
+                saveScriptBtn.classList.add('btn-secondary');
+                saveScriptBtn.classList.remove('btn-success');
+            }
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Set up copy button
+            modalCopyBtn.onclick = () => {
+                navigator.clipboard.writeText(script.script).then(() => {
+                    showMessage('Script copied to clipboard!');
+                }).catch(err => {
+                    showMessage('Failed to copy script');
+                    console.error('Failed to copy:', err);
+                });
+            };
+        }
+
+        function closeScriptModal() {
+            const modal = document.getElementById('scriptModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentScript = null;
+        }
+
+        function saveCurrentScript() {
+            if (!currentScript) return;
+            
+            const scriptToSave = {
+                title: currentScript.title,
+                script: currentScript.script,
+                game: currentScript.game?.name || 'No game specified',
+                image: currentScript.image,
+                date: new Date().toISOString()
+            };
+            
+            const saved = saveLocalScript(scriptToSave);
+            const saveScriptBtn = document.getElementById('saveScriptBtn');
+            
+            if (saved) {
+                saveScriptBtn.innerHTML = '<i class="fas fa-check"></i> Saved';
+                saveScriptBtn.classList.add('btn-success');
+                saveScriptBtn.classList.remove('btn-secondary');
+                showMessage('Script saved to your collection!');
+                
+                // If we're viewing local scripts, refresh the list
+                if (showLocalScripts) {
+                    renderLocalScripts();
+                }
+            } else {
+                showMessage('This script is already in your collection');
+            }
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.className = `page-button ${currentPage === 1 ? 'disabled' : ''}`;
+            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevButton.addEventListener('click', () => loadScripts(document.getElementById('searchInput').value.trim(), currentPage - 1));
+            pagination.appendChild(prevButton);
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                const firstPageButton = document.createElement('button');
+                firstPageButton.className = 'page-button';
+                firstPageButton.textContent = '1';
+                firstPageButton.addEventListener('click', () => loadScripts(document.getElementById('searchInput').value.trim(), 1));
+                pagination.appendChild(firstPageButton);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '8px 12px';
+                    ellipsis.style.color = 'var(--text-medium)';
+                    pagination.appendChild(ellipsis);
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = `page-button ${i === currentPage ? 'active' : ''}`;
+                pageButton.textContent = i;
+                pageButton.addEventListener('click', () => loadScripts(document.getElementById('searchInput').value.trim(), i));
+                pagination.appendChild(pageButton);
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '8px 12px';
+                    ellipsis.style.color = 'var(--text-medium)';
+                    pagination.appendChild(ellipsis);
+                }
+                
+                const lastPageButton = document.createElement('button');
+                lastPageButton.className = 'page-button';
+                lastPageButton.textContent = totalPages;
+                lastPageButton.addEventListener('click', () => loadScripts(document.getElementById('searchInput').value.trim(), totalPages));
+                pagination.appendChild(lastPageButton);
+            }
+            
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.className = `page-button ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextButton.addEventListener('click', () => loadScripts(document.getElementById('searchInput').value.trim(), currentPage + 1));
+            pagination.appendChild(nextButton);
+        }
+
+        function handleLocalCopy(event) {
+            event.stopPropagation();
+            const index = event.target.dataset.index;
+            const scripts = getLocalScripts();
+            const script = scripts[index];
+            
+            if (!script) {
+                showMessage('No script found');
+                return;
+            }
+
+            navigator.clipboard.writeText(script.script).then(() => {
+                showMessage('Script copied to clipboard!');
+                
+                // Button animation
+                const button = event.target;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.classList.add('btn-success');
+                button.classList.remove('btn-primary');
+                
+                setTimeout(() => {
+                    button.innerHTML = '<i class="fas fa-copy"></i> Copy Script';
+                    button.classList.add('btn-primary');
+                    button.classList.remove('btn-success');
+                }, 2000);
+            }).catch(err => {
+                showMessage('Failed to copy script');
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        function searchScripts() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            loadScripts(searchTerm, 1);
+        }
+
+        function showMessage(text) {
+            const notif = document.getElementById('notification');
+            notif.querySelector('span').textContent = text;
+            notif.style.display = 'flex';
+            notif.style.animation = 'none';
+            void notif.offsetWidth; // Trigger reflow
+            notif.style.animation = 'slideInRight 0.5s ease, fadeOut 0.5s ease 2.5s forwards';
+        }
+
+        function setupFilterListeners() {
+            document.getElementById('scriptType').addEventListener('change', searchScripts);
+            document.getElementById('sortBy').addEventListener('change', searchScripts);
+            document.getElementById('maxResults').addEventListener('change', searchScripts);
+        }
+
+        // Debounce function for search input
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this, args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        window.onload = () => {
+            loadScripts();
+            setupFilterListeners();
+            
+            // Add debounced search on input
+            const searchInput = document.getElementById('searchInput');
+            const debouncedSearch = debounce(searchScripts, 500);
+            searchInput.addEventListener('input', debouncedSearch);
+            
+            // Also search on Enter
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchScripts();
+            });
+            
+            // Modal close button
+            document.getElementById('modalClose').addEventListener('click', closeScriptModal);
+            
+            // Close modal when clicking outside
+            document.getElementById('scriptModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('scriptModal')) {
+                    closeScriptModal();
+                }
+            });
+
+            window.getEditorContent = function() {
+                const activeTab = tabManager.getActiveTab();
+                return activeTab && activeTab.editor ? activeTab.editor.getValue() : '';
+            };
+
+            window.monacoInitialized = function() {
+                return typeof tabManager !== 'undefined' && 
+                    typeof monaco !== 'undefined' &&
+                    typeof getEditorContent !== 'undefined';
+            };
+            // Local scripts toggle
+            document.getElementById('localScriptsToggle').addEventListener('click', toggleLocalScripts);
+            
+            // Save script button
+            document.getElementById('saveScriptBtn').addEventListener('click', saveCurrentScript);
+        };
+    </script>
+</body>
+</html>
